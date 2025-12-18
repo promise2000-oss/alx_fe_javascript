@@ -20,6 +20,10 @@
   <button id="exportBtn">Export Quotes</button>
   <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" title="Import quotes from JSON file" />
 
+  <select id="categoryFilter" onchange="filterQuotes()" title="Filter quotes by category">
+    <option value="all">All Categories</option>
+    <!-- Dynamically populated categories -->
+  </select>
     <script src="script.js"></script>
   </body>
   </html>
