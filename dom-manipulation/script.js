@@ -13,7 +13,7 @@ let quotes = JSON.parse(localStorage.getItem("quotes")) || defaultQuotes;
 // SERVER CONFIG
 // --------------------
 const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
-const SYNC_INTERVAL = 30000; // 30 seconds
+const SYNC_INTERVAL = 30000;
 
 // --------------------
 // STORAGE FUNCTIONS
@@ -56,7 +56,6 @@ function displayRandomQuote(list) {
     return;
   }
 
-  // REQUIRED Math.random()
   const randomIndex = Math.floor(Math.random() * list.length);
   const quote = list[randomIndex];
 
@@ -126,9 +125,7 @@ function importFromJsonFile(event) {
     try {
       const importedQuotes = JSON.parse(event.target.result);
 
-      if (!Array.isArray(importedQuotes)) {
-        throw new Error();
-      }
+      if (!Array.isArray(importedQuotes)) throw new Error();
 
       quotes.push(...importedQuotes);
       saveQuotes();
@@ -146,9 +143,9 @@ function importFromJsonFile(event) {
 }
 
 // --------------------
-// SERVER SYNC (FETCH)
+// SERVER FETCH (REQUIRED NAME)
 // --------------------
-async function fetchServerQuotes() {
+async function fetchQuotesFromServer() {
   try {
     const response = await fetch(SERVER_URL);
     const data = await response.json();
@@ -201,14 +198,14 @@ function notifyUser(message) {
 // MANUAL SYNC
 // --------------------
 function manualSync() {
-  fetchServerQuotes();
+  fetchQuotesFromServer();
   notifyUser("Manual sync initiated.");
 }
 
 // --------------------
 // PERIODIC SYNC
 // --------------------
-setInterval(fetchServerQuotes, SYNC_INTERVAL);
+setInterval(fetchQuotesFromServer, SYNC_INTERVAL);
 
 // --------------------
 // APP INITIALIZATION
@@ -216,5 +213,5 @@ setInterval(fetchServerQuotes, SYNC_INTERVAL);
 (function init() {
   populateCategories();
   filterQuotes();
-  fetchServerQuotes();
+  fetchQuotesFromServer();
 })();
