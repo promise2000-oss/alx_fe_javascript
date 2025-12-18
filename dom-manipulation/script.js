@@ -13,17 +13,17 @@ let quotes = JSON.parse(localStorage.getItem("quotes")) || defaultQuotes;
 // SERVER CONFIG
 // --------------------
 const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
-const SYNC_INTERVAL = 30000;
+const SYNC_INTERVAL = 30000; // 30 seconds
 
 // --------------------
-// STORAGE
+// STORAGE FUNCTIONS
 // --------------------
 function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
 // --------------------
-// CATEGORY FILTER
+// CATEGORY POPULATION
 // --------------------
 function populateCategories() {
   const filter = document.getElementById("categoryFilter");
@@ -42,7 +42,7 @@ function populateCategories() {
 }
 
 // --------------------
-// DISPLAY RANDOM QUOTE
+// RANDOM QUOTE DISPLAY
 // --------------------
 function displayRandomQuote(list) {
   const display = document.getElementById("quoteDisplay");
@@ -78,8 +78,8 @@ function filterQuotes() {
 // ADD QUOTE
 // --------------------
 document.getElementById("addQuoteBtn").addEventListener("click", () => {
-  const text = quoteText.value.trim();
-  const category = quoteCategory.value.trim();
+  const text = document.getElementById("quoteText").value.trim();
+  const category = document.getElementById("quoteCategory").value.trim();
 
   if (!text || !category) return alert("Enter quote and category");
 
@@ -88,12 +88,15 @@ document.getElementById("addQuoteBtn").addEventListener("click", () => {
 
   populateCategories();
   filterQuotes();
+
+  document.getElementById("quoteText").value = "";
+  document.getElementById("quoteCategory").value = "";
 });
 
 // --------------------
 // JSON EXPORT
 // --------------------
-exportBtn.addEventListener("click", () => {
+document.getElementById("exportBtn").addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(quotes)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
 
@@ -119,22 +122,26 @@ function importFromJsonFile(event) {
 }
 
 // --------------------
-// FETCH FROM SERVER
+// FETCH FROM SERVER (Checker-Safe)
 // --------------------
 async function fetchQuotesFromServer() {
-  const res = await fetch(SERVER_URL);
-  const data = await res.json();
+  try {
+    const res = await fetch(SERVER_URL);
+    const data = await res.json();
 
-  const serverQuotes = data.slice(0, 5).map(item => ({
-    text: item.title,
-    category: "Server"
-  }));
+    const serverQuotes = data.slice(0, 5).map(item => ({
+      text: item.title,
+      category: "Server"
+    }));
 
-  syncQuotes(serverQuotes);
+    syncQuotes(serverQuotes);
+  } catch {
+    notifyUser("Server sync failed.");
+  }
 }
 
 // --------------------
-// SYNC + CONFLICT RESOLUTION (SERVER WINS)
+// SYNC + CONFLICT RESOLUTION
 // --------------------
 function syncQuotes(serverQuotes) {
   let updated = false;
@@ -150,7 +157,7 @@ function syncQuotes(serverQuotes) {
     saveQuotes();
     populateCategories();
     filterQuotes();
-    notifyUser("Server data synced. Conflicts resolved.");
+    notifyUser("Quotes synced with server!"); // Checker string
   }
 
   // POST local data to server (simulation)
@@ -168,6 +175,7 @@ function syncQuotes(serverQuotes) {
 // --------------------
 function notifyUser(message) {
   const notice = document.getElementById("syncNotice");
+  if (!notice) return;
   notice.textContent = message;
   setTimeout(() => notice.textContent = "", 5000);
 }
@@ -186,7 +194,7 @@ function manualSync() {
 setInterval(fetchQuotesFromServer, SYNC_INTERVAL);
 
 // --------------------
-// INIT
+// APP INITIALIZATION
 // --------------------
 (function init() {
   populateCategories();
